@@ -176,6 +176,7 @@
 
                 // calculate width of the division by its respective percent against the total width of the component
                 var newWidth = Math.round( ( this.container.innerWidth() * this.options.percents[i] ) / 100  );
+
                 // update each division with new width, and inherit height
                 division.css({
                     'width': newWidth + 'px',
@@ -265,11 +266,16 @@
             // store handler index
             var handlerIndex = handler.data(this.HANDLER_INDEX_DATA);
 
+            var $document = $(document);
+
             // start drag
             handler.off('mousedown').on('mousedown', function(event) {
 
                 // switch
                 self.isDragging = true;
+
+                // add class
+                handler.addClass(self.options.overClass);
 
                 // store the position where we mousedown
                 var downX = event.pageX - handler.offset().left;
@@ -292,61 +298,64 @@
                 });
 
                 // bind movement
-                self.container.off('mousemove').on('mousemove', function(event) {
+                $document.off('mousemove').on('mousemove', function(event) {
 
-                    //if (self.isDragging) {
+                    if (self.isDragging) {
 
-                    // get local value for horizontal position (mouse position - container offset - mousedown position)
-                    var moveX = event.pageX - $(self.container).offset().left - downX;
+                        // get local value for horizontal position (mouse position - container offset - mousedown position)
+                        var moveX = event.pageX - $(self.container).offset().left - downX;
 
-                    // limit movement
-                    if ( moveX < rightLimit && moveX > leftLimit ) {
+                        // limit movement
+                        if ( moveX < rightLimit && moveX > leftLimit ) {
 
-                        // move handler along
-                        handler.css('left', moveX + 'px');
+                            // move handler along
+                            handler.css('left', moveX + 'px');
 
-                        // calculate summed widths of divisions that come before
-                        var offsetX = 0;
-                        for (var i = 0; i < handlerIndex; i++) {
-                            offsetX += $(self.divisions)[i].width();
+                            // calculate summed widths of divisions that come before
+                            var offsetX = 0;
+                            for (var i = 0; i < handlerIndex; i++) {
+                                offsetX += $(self.divisions)[i].width();
+                            }
+
+                            // calculate difference between initial state and current movement
+                            var diff = parseInt(prevInitialWidth - moveX + offsetX );
+
+                            // resize divisions accordingly
+                            $(self.divisions)[handlerIndex].css('width', parseInt(moveX - offsetX) + 'px');
+                            // check if next handler is NOT the LAST handler
+                            if (handlerIndex < (self.options.percents.length - 2)) {
+                                $(self.divisions)[handlerIndex + 1].css('width', parseInt(nextInitialWidth +  diff) + 'px');
+                                // else, define left margin for last division
+                            } else {
+                                $(self.divisions)[handlerIndex + 1].css('margin-left', moveX + 'px');
+                            }
+
+                            // calculate new percents
+                            self._setPercents();
+
+                            // callback for handler move event (eventName, eventObject, uiObject)
+                            self._trigger(self.events.onHandlerMove, event, {
+                                handler: handler,
+                                handlerIndex: handlerIndex,
+                                percents: self.options.percents
+                            });
                         }
 
-                        // calculate difference between initial state and current movement
-                        var diff = parseInt(prevInitialWidth - moveX + offsetX );
-
-                        // resize divisions accordingly
-                        $(self.divisions)[handlerIndex].css('width', parseInt(moveX - offsetX) + 'px');
-                        // check if next handler is NOT the LAST handler
-                        if (handlerIndex < (self.options.percents.length - 2)) {
-                            $(self.divisions)[handlerIndex + 1].css('width', parseInt(nextInitialWidth +  diff) + 'px');
-                            // else, define left margin for last division
-                        } else {
-                            $(self.divisions)[handlerIndex + 1].css('margin-left', moveX + 'px');
-                        }
-
-                        // calculate new percents
-                        self._setPercents();
-
-                        // callback for handler move event (eventName, eventObject, uiObject)
-                        self._trigger(self.events.onHandlerMove, event, {
-                            handler: handler,
-                            handlerIndex: handlerIndex,
-                            percents: self.options.percents
-                        });
                     }
-
-                    //}
 
                 });
 
                 // listen for mouse up on whole document, and stop moving
-                $(document).off('mouseup').on('mouseup', function(event) {
+                $document.off('mouseup').on('mouseup', function(event) {
 
                     // switch
                     self.isDragging = false;
 
                     // unbind movement
                     self.container.unbind('mousemove');
+
+                    // remove class
+                    handler.removeClass(self.options.overClass);
 
                     // set new percentages
                     self._setPercents();
@@ -358,32 +367,6 @@
                         percents: self.options.percents
                     });
 
-                });
-
-            });
-
-            // on over
-            handler.off('mouseenter').on('mouseenter', function() {
-
-                // add class
-                handler.addClass(self.options.overClass);
-
-                // callback for handler over event (eventName, eventObject, uiObject)
-                self._trigger(self.events.onHandlerOver, null, {
-                    handler: handler
-                });
-
-            });
-
-            // on out
-            handler.off('mouseleave').on('mouseleave', function() {
-
-                // remove class
-                handler.removeClass(self.options.overClass);
-
-                // callback for handler out event (eventName, eventObject, uiObject)
-                self._trigger(self.events.onHandlerOut, null, {
-                    handler: handler
                 });
 
             });
@@ -461,7 +444,7 @@
             var tempSum = 0;
 
             // get all divisions BUT the last one (it will be calculated afterwards to fit 100%, and avoid inconsistencies...)
-            for (var i = 0; i < (this.divisions.length - 1); i++) {
+            for (var i = 0; i < (this.divisions.length - 1 ); i++) {
 
                 // take each width and calculate its percent
                 var w = $(this.divisions)[i].width();
