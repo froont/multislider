@@ -23,6 +23,7 @@
             onDivisonClick: 'divisonClick',
             onDivisonDblClick: 'divisonDblClick',
             onHandlerDblClick: 'handlerDblClick',
+            onHandlerClickDelete: 'handlerClickDelete',
             onChange: 'changed'
         },
 
@@ -171,6 +172,7 @@
                     'class': this.DIVISION_CLASS
                 })
                     // and also a span inside them... just to have somewhere to write on...
+                    .attr('title',  'Double click to add/remove column')
                     .append( $('<span/>') )
                     .appendTo(this.container);
 
@@ -230,6 +232,8 @@
                 var handler = $('<div/>', {
                     'class': this.HANDLER_CLASS
                 })
+                    .attr('tabindex',  h)
+                    .attr('title',  'Double click to add/remove column')
                     .css('position', 'absolute')
                     .prependTo(this.container);
 
@@ -273,6 +277,7 @@
 
                 // switch
                 self.isDragging = true;
+                self.isActive = true;
 
                 // add class
                 handler.addClass(self.options.overClass);
@@ -345,15 +350,42 @@
 
                 });
 
+                var keydown = function(e){
+                    $document.off('keydown', keydown);
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    if( e.keyCode === 46 || // delete
+                        e.keyCode === 8 // backspace
+                    ){
+                        self._trigger(self.events.onHandlerClickDelete, null, {
+                            handler: handler,
+                            handlerIndex: handlerIndex
+                        });
+                    }
+                };
+
+                var mousedown = function(){
+                    $document.off('mousedown', mousedown);
+                    self.isActive = false;
+                    handler.removeClass(self.options.overClass);
+                };
+
                 // listen for mouse up on whole document, and stop moving
                 var mouseup = function(event) {
-                    $document.off('mouseup', this);
+                    $document.off('mouseup', mouseup);
+
+                    handler.focus();
+                    handler.on('keydown', keydown);
+
+                    // on element blur
+                    $document.on('mousedown', mousedown);
 
                     // switch
                     self.isDragging = false;
 
                     // remove class
-                    handler.removeClass(self.options.overClass);
+                    //handler.removeClass(self.options.overClass);
 
                     // set new percentages
                     self._setPercents();
@@ -365,9 +397,7 @@
                         percents: self.options.percents
                     });
                 };
-
                 $document.on('mouseup', mouseup);
-
             });
 
             handler.on('dblclick', function (event) {
