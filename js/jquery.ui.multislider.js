@@ -346,14 +346,11 @@
                 });
 
                 // listen for mouse up on whole document, and stop moving
-                $document.off('mouseup').on('mouseup', function(event) {
-                    $document.off('mousemove');
+                var mouseup = function(event) {
+                    $document.off('mouseup', this);
 
                     // switch
                     self.isDragging = false;
-
-                    // unbind movement
-                    self.container.unbind('mousemove');
 
                     // remove class
                     handler.removeClass(self.options.overClass);
@@ -367,8 +364,9 @@
                         handlerIndex: handlerIndex,
                         percents: self.options.percents
                     });
+                };
 
-                });
+                $document.on('mouseup', mouseup);
 
             });
 
