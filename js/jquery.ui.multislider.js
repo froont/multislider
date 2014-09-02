@@ -347,6 +347,7 @@
 
                 // listen for mouse up on whole document, and stop moving
                 $document.off('mouseup').on('mouseup', function(event) {
+                    $document.off('mousemove');
 
                     // switch
                     self.isDragging = false;
