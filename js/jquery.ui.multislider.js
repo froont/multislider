@@ -364,8 +364,11 @@
                     }
                 };
 
-                var mousedown = function(){
+                var mousedown = function(event){
                     $document.off('mousedown', mousedown);
+                    if ( handler.is(event.target) ) {
+                        return;
+                    }
                     self.isActive = false;
                     handler.removeClass(self.options.overClass);
                 };
