@@ -172,7 +172,7 @@
                     'class': this.DIVISION_CLASS
                 })
                     // and also a span inside them... just to have somewhere to write on...
-                    .attr('title',  'Double click to add/remove column')
+                    //.attr('title',  'Double click to add/remove column')
                     .append( $('<span/>') )
                     .appendTo(this.container);
 
@@ -233,7 +233,7 @@
                     'class': this.HANDLER_CLASS
                 })
                     .attr('tabindex',  h)
-                    .attr('title',  'Double click to add/remove column')
+                    //.attr('title',  'Double click to add/remove column')
                     .css('position', 'absolute')
                     .prependTo(this.container);
 
@@ -352,12 +352,11 @@
 
                 var keydown = function(e){
                     $document.off('keydown', keydown);
-                    e.stopPropagation();
-                    e.preventDefault();
-
                     if( e.keyCode === 46 || // delete
                         e.keyCode === 8 // backspace
                     ){
+                        e.stopPropagation();
+                        e.preventDefault();
                         self._trigger(self.events.onHandlerClickDelete, null, {
                             handler: handler,
                             handlerIndex: handlerIndex
