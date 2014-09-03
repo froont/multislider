@@ -23,7 +23,7 @@
             onDivisonClick: 'divisonClick',
             onDivisonDblClick: 'divisonDblClick',
             onHandlerDblClick: 'handlerDblClick',
-            onHandlerClickDelete: 'handlerClickDelete',
+            onHandlerKeyDelete: 'handlerKeyDelete',
             onChange: 'changed'
         },
 
@@ -357,7 +357,7 @@
                     ){
                         e.stopPropagation();
                         e.preventDefault();
-                        self._trigger(self.events.onHandlerClickDelete, null, {
+                        self._trigger(self.events.onHandlerKeyDelete, null, {
                             handler: handler,
                             handlerIndex: handlerIndex
                         });
@@ -378,6 +378,7 @@
                     $document.off('mouseup', mouseup);
 
                     handler.focus();
+                    handler.off('keydown', keydown);
                     handler.on('keydown', keydown);
 
                     // on element blur
