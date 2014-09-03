@@ -378,7 +378,7 @@
                     $document.off('mouseup', mouseup);
 
                     handler.focus();
-                    handler.off('keydown', keydown);
+                    $('.multiSliderHandler').off('keydown');
                     handler.on('keydown', keydown);
 
                     // on element blur
